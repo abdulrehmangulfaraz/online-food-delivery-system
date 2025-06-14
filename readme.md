@@ -204,32 +204,31 @@ Visit: [http://localhost:3000](http://localhost:3000)
 > Click below to preview the project visually.
 
 ### 🧑‍🍳 Customer Screens
-
 <details>
 <summary>Login | Signup | Menu | Order | Billing</summary>
 
-* !\[Login]\(screenshots/screencapture-localhost-3000-2025-06-14-08 47\_44.png)
-* !\[Signup]\(screenshots/screencapture-localhost-3000-signup- html-2025-06-14-08\_47\_51 .png)
-* !\[Menu]\(screenshots/screencapture-localhost-3000-customer-menu-html-2025-06-14-08 56\_31.png)
-* !\[Billing]\(screenshots/screencapture-localhost- 3000-customer- billing- html-2025-06-14-08\_ 57\_47.png)
-* !\[Track]\(screenshots/screencapture-localhost- 3000-customer-track-order-.png)
-* !\[History]\(screenshots/screencapture-localhost- 3000-customer-order- history-.png)
+- ![Login](Screenshots/login.png)
+- ![Signup](Screenshots/signup.png)
+- ![Menu](Screenshots/customer-menu.png)
+- ![Billing](Screenshots/customer-billing.png)
+- ![Track](Screenshots/customer-track-order.png)
+- ![History](Screenshots/customer-order-history.png)
 
 </details>
 
 ### 🛠️ Admin Screens
-
 <details>
 <summary>Dashboard | User Mgmt | Menu | Delivery</summary>
 
-* !\[Dashboard]\(screenshots/screencapture-localhost- 3000-admin-dashboard- html- .png)
-* !\[Users]\(screenshots/screencapture-localhost- 3000-admin- users- html-2025-06-14-08\_ 53\_37.png)
-* !\[Add User]\(screenshots/screencapture-localhost- 3000-admin-add- user-.png)
-* !\[Edit User]\(screenshots/screencapture-localhost-30-admin-edit- user- html-2025-06-14-08\_54\_01 .png)
-* !\[Manage Menu]\(screenshots/screencapture-localhost- 3000-admin- manage- menu-.png)
-* !\[Delivery]\(screenshots/screencapture-localhost- 3000-admin-delivery-status-.png)
+- ![Dashboard](Screenshots/admin-dashboard.png)
+- ![Users](Screenshots/admtn-users.png)
+- ![Add User](Screenshots/admin-add-user.png)
+- ![Edit User](Screenshots/admin-edit-user.png)
+- ![Manage Menu](Screenshots/adrmn-manage-menu.png)
+- ![Delivery](Screenshots/admin-delivery-status.png)
 
 </details>
+
 
 ---
 
