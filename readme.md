@@ -221,10 +221,10 @@ Visit: [http://localhost:3000](http://localhost:3000)
 <summary>Dashboard | User Mgmt | Menu | Delivery</summary>
 
 - ![Dashboard](Screenshots/admin-dashboard.png)
-- ![Users](Screenshots/admtn-users.png)
+- ![Users](Screenshots/admin-users.png)
 - ![Add User](Screenshots/admin-add-user.png)
 - ![Edit User](Screenshots/admin-edit-user.png)
-- ![Manage Menu](Screenshots/adrmn-manage-menu.png)
+- ![Manage Menu](Screenshots/admin-manage-menu.png)
 - ![Delivery](Screenshots/admin-delivery-status.png)
 
 </details>
