@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu - Chef Deliver and Track</title>
+    <link rel="stylesheet" href="../css/Pages.css">
+    <style>
+        /* Additional menu-specific styles */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--space-lg);
+        }
+        
+        .menu-card {
+            background: var(--secondary-light);
+            border-radius: 8px;
+            padding: var(--space-lg);
+            border-left: 4px solid var(--primary-dark);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .menu-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+        
+        .menu-card h3 {
+            margin-bottom: var(--space-sm);
+            color: var(--accent);
+        }
+        
+        .menu-card .price {
+            font-weight: 600;
+            color: var(--primary-darker);
+            margin: var(--space-sm) 0;
+            font-size: var(--font-lg);
+        }
+        
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--space-sm) 0;
+            border-bottom: 1px dashed var(--border);
+        }
+        
+        .empty-cart {
+            color: var(--accent-light);
+            font-style: italic;
+            padding: var(--space-md);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <div class="header-content">
+                <h1>Chef Deliver and Track</h1>
+                <p class="admin-subtitle">Menu Selection</p>
+            </div>
+        </header>
+
+        <main class="dashboard-main">
+            <div class="action-bar">
+                <a href="track-order.html" class="btn btn-secondary">Track Order</a>
+                <a href="order-history.html" class="btn btn-secondary">View Recent Orders</a>
+                <a href="../login.html" class="btn logout-btn">Logout</a>
+            </div>
+
+            <div class="flex" style="gap: var(--space-xl); align-items: flex-start;">
+                <div class="form-card" style="flex: 2;">
+                    <h2>Our Menu</h2>
+                    <div id="menu-items" class="menu-grid">
+                        <div class="loading">Loading menu...</div>
+                    </div>
+                </div>
+
+                <div class="form-card" style="flex: 1; position: sticky; top: var(--space-xl);">
+                    <h2>Your Cart</h2>
+                    <ul id="cart-items">
+                        <li class="empty-cart">Your cart is empty</li>
+                    </ul>
+                    <div class="cart-total" style="margin-top: var(--space-lg); padding: var(--space-md); background: var(--secondary); border-radius: 8px;">
+                        <p style="font-weight: 600; text-align: right;">Total Rs. <span id="cart-total">0.00</span></p>
+                    </div>
+                    <button id="checkout-btn" class="btn btn-primary" disabled style="width: 100%; margin-top: var(--space-md);">
+                        Proceed to Checkout
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Cart state
+        let cart = [];
+        
+        // Fetch menu items from backend
+        async function fetchMenuItems() {
+            try {
+                const response = await fetch('/api/menu', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                
+                const menuItems = await response.json();
+                displayMenuItems(menuItems);
+            } catch (error) {
+                console.error('Error fetching menu:', error);
+                document.getElementById('menu-items').innerHTML = `
+                    <div class="menu-card error">
+                        <h3>Error Loading Menu</h3>
+                        <p>Please try again later</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Display menu items
+        function displayMenuItems(items) {
+            const menuContainer = document.getElementById('menu-items');
+            menuContainer.innerHTML = '';
+            
+            if (!items || items.length === 0) {
+                menuContainer.innerHTML = `
+                    <div class="menu-card">
+                        <h3>No Menu Items</h3>
+                        <p>No items available at this time</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            items.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'menu-card';
+                itemElement.innerHTML = `
+                    <h3>${item.name} ${item.emoji || ''}</h3>
+                    <p class="description">${item.description || ''}</p>
+                    <p class="price"> Rs. ${Number(item.price).toFixed(2)}</p>
+                    <button onclick="addToCart(${item.id}, '${item.name}', ${item.price})" 
+                            class="btn btn-primary" style="margin-top: auto;">
+                        Add to Cart
+                    </button>
+                `;
+                menuContainer.appendChild(itemElement);
+            });
+        }
+
+        // Add to cart function
+        async function addToCart(menuId, name, price) {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    alert('Please log in to add items to your cart.');
+                    window.location.href = '../login.html';
+                    return;
+                }
+
+                const response = await fetch('/api/orders/add-to-cart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ menuId, quantity: 1, price })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Failed to add item to cart. Status: ${response.status}. Response: ${errorText}`);
+                }
+
+                const data = await response.json();
+                const existingItem = cart.find(item => item.menuId === menuId);
+                
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    cart.push({ menuId, name, price, quantity: 1 });
+                }
+                
+                updateCartDisplay();
+            } catch (error) {
+                console.error('Error adding to cart:', error);
+                alert(`Failed to add item to cart: ${error.message}`);
+            }
+        }
+
+        // Update cart display
+        function updateCartDisplay() {
+            const cartItemsContainer = document.getElementById('cart-items');
+            const cartTotalElement = document.getElementById('cart-total');
+            const checkoutBtn = document.getElementById('checkout-btn');
+
+            cartItemsContainer.innerHTML = '';
+            let total = 0;
+
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '<li class="empty-cart">Your cart is empty</li>';
+            } else {
+                cart.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = 'cart-item';
+                    li.innerHTML = `
+                        <span>${item.name} x${item.quantity}</span>
+                        <span> Rs. ${(item.price * item.quantity).toFixed(2)}</span>
+                    `;
+                    cartItemsContainer.appendChild(li);
+                    total += item.price * item.quantity;
+                });
+            }
+
+            cartTotalElement.textContent = total.toFixed(2);
+            checkoutBtn.disabled = cart.length === 0;
+
+            checkoutBtn.onclick = async () => {
+                try {
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        alert('You must be logged in to checkout.');
+                        window.location.href = '../login.html';
+                        return;
+                    }
+                
+                    const response = await fetch('/api/orders/checkout', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                
+                    if (!response.ok) {
+                        const errorMsg = await response.text();
+                        throw new Error(`Checkout failed: ${response.status} - ${errorMsg}`);
+                    }
+                
+                    const result = await response.json();
+                    const orderId = result.orderId || result.id; // Adjust depending on backend response
+                
+                    window.location.href = `billing.html?order_id=${orderId}`;
+                } catch (error) {
+                    console.error('Checkout error:', error);
+                    alert(`Failed to checkout: ${error.message}`);
+                }
+            };
+
+
+
+        }
+
+        // Initialize menu on page load
+        document.addEventListener('DOMContentLoaded', fetchMenuItems);
+    </script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="admin-dashboard">
+  <div class="admin-container">
+    <header class="admin-header">
+      <div class="header-content">
+        <h1>Welcome To Chef Deliver and Track by Abdulrehman - Admin</h1>
+        <p class="admin-subtitle">Administrator Control Panel</p>
+      </div>
+      <div class="quick-stats">
+        <div class="stat-card pulse">
+          <i class="fas fa-users"></i>
+          <span class="stat-number shimmer">14</span>
+          <span class="stat-label">Active Users</span>
+        </div>
+        <div class="stat-card pulse">
+          <i class="fas fa-utensils"></i>
+          <span class="stat-number shimmer">10</span>
+          <span class="stat-label">Menu Items</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="dashboard-main">
+      <div class="action-grid">
+        <a href="users.html" class="action-card float">
+          <div class="card-icon"><i class="fas fa-users"></i></div>
+          <h3>Manage Users</h3>
+          <p>View and edit all user accounts</p>
+          <div class="action-arrow"><i class="fas fa-arrow-right"></i></div>
+        </a>
+        
+        <a href="add-user.html" class="action-card float">
+          <div class="card-icon"><i class="fas fa-user-plus"></i></div>
+          <h3>Add User</h3>
+          <p>Create new administrator accounts</p>
+          <div class="action-arrow"><i class="fas fa-arrow-right"></i></div>
+        </a>
+        
+        <a href="manage-menu.html" class="action-card float">
+          <div class="card-icon"><i class="fas fa-utensils"></i></div>
+          <h3>Manage Menu</h3>
+          <p>Add or update food items</p>
+          <div class="action-arrow"><i class="fas fa-arrow-right"></i></div>
+        </a>
+        
+        <a href="delivery-status.html" class="action-card float">
+          <div class="card-icon"><i class="fas fa-truck"></i></div>
+          <h3>Delivery Status</h3>
+          <p>Update order tracking status</p>
+          <div class="action-arrow"><i class="fas fa-arrow-right"></i></div>
+        </a>
+      </div>
+
+      <div class="recent-activity slide-in">
+        <h2><i class="fas fa-history"></i> Recent Activity</h2>
+        <div class="activity-list">
+          <div class="activity-item fade-in">
+            <i class="fas fa-user-edit"></i>
+            <span>Updated user profile (Sherii)</span>
+            <span class="activity-time">2 hours ago</span>
+          </div>
+          <div class="activity-item fade-in" style="animation-delay: 0.1s;">
+            <i class="fas fa-hamburger"></i>
+            <span>Added new menu item (Burger)</span>
+            <span class="activity-time">Yesterday</span>
+          </div>
+          <div class="activity-item fade-in" style="animation-delay: 0.2s;">
+            <i class="fas fa-truck-moving"></i>
+            <span>Updated delivery status (#ORD-701)</span>
+            <span class="activity-time">2 days ago</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="admin-footer">
+      <button onclick="logout()" class="logout-btn glow">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+    </footer>
+  </div>
+
+  <script src="../main.js"></script>
+  <script>
+    protect('admin');
+  </script>
+</body>
+</html>

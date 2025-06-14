@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Users - Admin Dashboard</title>
+  <link rel="stylesheet" href="../css/Pages.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="admin-dashboard">
+  <div class="admin-container">
+    <header class="admin-header">
+      <div class="header-content">
+        <h1>Welcome To Chef Deliver and Track by Abdulrehman - Admin</h1>
+        <p class="admin-subtitle">User Management</p>
+      </div>
+    </header>
+
+    <div class="dashboard-main">
+      <div class="action-bar">
+        <a href="add-user.html" class="action-btn float">
+          <i class="fas fa-user-plus"></i> Add New User
+        </a>
+      </div>
+
+      <div class="user-list-container slide-in">
+        <ul id="userList" class="starling-list"></ul>
+      </div>
+    </div>
+
+    <footer class="admin-footer">
+      <button onclick="logout()" class="logout-btn glow">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+    </footer>
+  </div>
+
+  <script src="../main.js"></script>
+  <script>
+    async function fetchUsers() {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/users', {
+        headers: { Authorization: token }
+      });
+
+      if (!res.ok) {
+        alert('Failed to fetch users.');
+        return;
+      }
+
+      const users = await res.json();
+      const container = document.getElementById('userList');
+      container.innerHTML = users.map(u =>
+        `<li class="fade-in">
+          <div class="user-info">
+            <span class="user-name">${u.username}</span>
+            <span class="user-email">${u.email}</span>
+            <span class="user-role">${u.role}</span>
+          </div>
+          <a href="edit-user.html?id=${u.user_id}" class="edit-btn">
+            <i class="fas fa-edit"></i> Edit
+          </a>
+        </li>`
+      ).join('');
+    }
+
+    protect('admin');
+    fetchUsers();
+  </script>
+</body>
+</html>

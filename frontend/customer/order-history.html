@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chef Deliver and Track - Order History</title>
+    <link rel="stylesheet" href="../css/Pages.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Enhanced styles for all four status categories */
+        .order-card {
+            background: white;
+            border-radius: 8px;
+            padding: var(--space-md);
+            margin-bottom: var(--space-sm);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+        
+        /* Status-specific border colors */
+        .order-card[data-status="delivered"] {
+            border-left: 4px solid var(--success);
+        }
+        .order-card[data-status="pending"] {
+            border-left: 4px solid var(--primary);
+        }
+        .order-card[data-status="Confirmed"] {
+            border-left: 4px solid var(--primary-dark);
+        }
+        .order-card[data-status="cancelled"] {
+            border-left: 4px solid var(--error);
+        }
+        
+        .order-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-xs);
+        }
+        
+        .order-status {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        /* Status-specific styling */
+        .status-delivered {
+            background: var(--success);
+            color: white;
+        }
+        .status-pending {
+            background: var(--primary-light);
+            color: var(--text);
+        }
+        .status-out-for-delivery {
+            background: #42a5f5;
+            color: white;
+        }
+        .status-cancelled {
+            background: var(--error-light);
+            color: var(--error);
+        }
+        
+        .order-date {
+            color: var(--accent-light);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+        
+        .order-total {
+            font-weight: 600;
+            color: var(--accent);
+            margin-top: 4px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-md);
+            margin-top: var(--space-xl);
+            padding-top: var(--space-md);
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-lg);
+            flex-wrap: wrap;
+        }
+        
+        .stat-cards {
+            display: flex;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+            flex-wrap: wrap;
+        }
+        
+        .stat-card {
+            flex: 1;
+            min-width: 120px;
+            background: white;
+            border-radius: 8px;
+            padding: var(--space-md);
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-top: 3px solid var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <div class="header-content">
+                <h1><i class="fas fa-utensils"></i> Chef Deliver and Track</h1>
+                <p class="admin-subtitle">Your Complete Order History</p>
+            </div>
+        </header>
+
+        <main class="dashboard-main">
+            <div class="form-card">
+                <div class="flex justify-between items-center mb-md">
+                    <h2><i class="fas fa-history"></i> Your Order History</h2>
+                    <div class="search-container">
+                        <input type="search" id="orderSearch" placeholder="Search orders...">
+                    </div>
+                </div>
+                
+                <div class="filter-buttons">
+                    <button class="btn btn-secondary active" data-filter="all">All Orders</button>
+                    <button class="btn btn-secondary" data-filter="delivered">Delivered</button>
+                    <button class="btn btn-secondary" data-filter="pending">Pending</button>
+                    <button class="btn btn-secondary" data-filter="Confirmed">Confirmed</button>
+                    <button class="btn btn-secondary" data-filter="cancelled">Cancelled</button>
+                </div>
+                
+                <div class="stat-cards">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalOrders">0</div>
+                        <div class="stat-label">Total Orders</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="completedOrders">0</div>
+                        <div class="stat-label">Delivered</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="remainingOrders">0</div>
+                        <div class="stat-label">Remaining</div>
+                    </div>
+
+                </div>
+                
+                <div id="orderHistory" class="starling-list"></div>
+                
+                <div class="action-buttons">
+                    <a href="menu.html" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Menu</a>
+                    <a href="#" class="btn logout-btn" onclick="logout(); return false;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../main.js"></script>
+    <script>
+        protect('user');
+
+        async function loadOrderHistory() {
+            const resultDiv = document.getElementById('orderHistory');
+            resultDiv.innerHTML = '<div class="shimmer" style="height: 100px; border-radius: 8px;"></div>';
+            
+            try {
+                const res = await fetch('/api/orders/history', {
+                    headers: { 
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const orders = await res.json();
+
+                if (res.ok) {
+                    // Calculate stats
+                    const totalOrders = orders.length;
+                    const completedOrders = orders.filter(o => o.status.toLowerCase() === 'delivered').length;
+                    const remainingOrders = orders.filter(o => o.status.toLowerCase() !== 'delivered').length;
+
+                    // Update stats
+                    document.getElementById('totalOrders').textContent = totalOrders;
+                    document.getElementById('completedOrders').textContent = completedOrders;
+                    document.getElementById('remainingOrders').textContent = remainingOrders;
+   
+                    // Render orders
+                    resultDiv.innerHTML = orders.map(order => {
+                        const status = order.status.toLowerCase();
+                        return `
+                        <div class="order-card fade-in" data-status="${status}">
+                            <div class="order-header">
+                                <h3>Order #${order.id}</h3>
+                                <span class="order-status status-${status.replace(' ', '-')}">
+                                    <i class="fas ${getStatusIcon(order.status)}"></i> ${order.status}
+                                </span>
+                            </div>
+                            <div class="order-date">
+                                ${new Date(order.updatedAt).toLocaleString()}
+                            </div>
+                            ${order.totalAmount ? `<div class="order-total">Total: $${order.totalAmount.toFixed(2)}</div>` : ''}
+                        </div>
+                        `;
+                    }).join('');
+                    
+                    // Setup filter buttons
+                    setupFilters();
+                    // Setup search
+                    setupSearch();
+                } else {
+                    resultDiv.innerHTML = `<div class="order-card error">${orders.message || 'Failed to load orders'}</div>`;
+                }
+            } catch (error) {
+                console.error('Order history error:', error);
+                resultDiv.innerHTML = `<div class="order-card error">Failed to load orders: ${error.message}</div>`;
+            }
+        }
+
+        function getStatusIcon(status) {
+            const statusIcons = {
+                'delivered': 'fa-check-circle',
+                'pending': 'fa-hourglass-half',
+                'Confirmed': 'fa-truck-fast',
+                'cancelled': 'fa-times-circle'
+            };
+            return statusIcons[status.toLowerCase()] || 'fa-question-circle';
+        }
+
+        function setupFilters() {
+            const filterButtons = document.querySelectorAll('[data-filter]');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Update active button
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    // Filter orders
+                    const filter = button.dataset.filter;
+                    const orders = document.querySelectorAll('#orderHistory .order-card');
+                    
+                    orders.forEach(order => {
+                        if (filter === 'all' || order.dataset.status === filter) {
+                            order.style.display = 'block';
+                        } else {
+                            order.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        }
+
+        function setupSearch() {
+            const searchInput = document.getElementById('orderSearch');
+            searchInput.addEventListener('input', () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                const orders = document.querySelectorAll('#orderHistory .order-card');
+                
+                orders.forEach(order => {
+                    const text = order.textContent.toLowerCase();
+                    order.style.display = text.includes(searchTerm) ? 'block' : 'none';
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadOrderHistory);
+    </script>
+</body>
+</html>

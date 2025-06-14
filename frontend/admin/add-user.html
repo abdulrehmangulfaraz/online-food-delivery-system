@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add User - Admin</title>
+  <link rel="stylesheet" href="../css/Pages.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="admin-dashboard">
+  <div class="admin-container">
+    <header class="admin-header">
+      <div class="header-content">
+        <h1>Welcome To Chef Deliver and Track by Abdulrehman - Admin</h1>
+        <p class="admin-subtitle">Add New User</p>
+      </div>
+    </header>
+
+    <div class="dashboard-main">
+      <div class="form-card slide-in">
+        <form id="addUserForm" class="starling-form">
+          <div class="form-group">
+            <label for="username"><i class="fas fa-user"></i> Username</label>
+            <input type="text" id="username" placeholder="Enter username" required>
+          </div>
+          <div class="form-group">
+            <label for="email"><i class="fas fa-envelope"></i> Email</label>
+            <input type="email" id="email" placeholder="Enter email" required>
+          </div>
+          <div class="form-group">
+            <label for="password"><i class="fas fa-lock"></i> Password</label>
+            <input type="password" id="password" placeholder="Enter password" required>
+          </div>
+          <div class="form-group">
+            <label for="role"><i class="fas fa-user-tag"></i> Role</label>
+            <select id="role" required>
+              <option value="">Select Role</option>
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <button type="submit" class="glow">
+            <i class="fas fa-user-plus"></i> Add User
+          </button>
+        </form>
+        <a href="users.html" class="back-link float"><i class="fas fa-arrow-left"></i> Back to Users</a>
+      </div>
+    </div>
+
+    <footer class="admin-footer">
+      <!-- Footer content if needed -->
+    </footer>
+  </div>
+
+  <script src="../main.js"></script>
+  <script>
+    // Your existing JavaScript remains unchanged
+    document.getElementById('addUserForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const token = localStorage.getItem('token');
+
+      const user = {
+        username: document.getElementById('username').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+        role: document.getElementById('role').value
+      };
+
+      console.log('Sending token:', token);
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(user)
+      });
+      const data = await res.text();
+      console.log('Server response:', data);
+      if (res.ok) {
+        alert('User added successfully');
+        window.location.href = 'users.html';
+      } else {
+        alert(data || 'Failed to add user');
+      }
+    });
+    
+    protect('admin');
+  </script>
+</body>
+</html>

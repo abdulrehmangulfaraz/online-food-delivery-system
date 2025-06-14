@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Billing - Chef Deliver</title>
+  <link rel="stylesheet" href="../css/billing.css">
+</head>
+<body>
+  <div class="admin-container">
+    <header class="admin-header">
+      <div class="header-content">
+        <h1>Chef Deliver and Track</h1>
+        <p class="admin-subtitle">Order Invoice</p>
+      </div>
+    </header>
+
+    <main class="dashboard-main">
+      <div class="invoice-card">
+        <div class="invoice-header">
+          <div class="invoice-logo">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3zm0 2.8L18 10v8h-2v-6H8v6H6v-8l6-4.2z"/>
+            </svg>
+          </div>
+          <div class="invoice-meta">
+            <p>Order Date: <span id="orderDate">Today</span></p>
+            <p>Status: <span id="orderStatus" class="status-badge">Loading...</span></p>
+          </div>
+        </div>
+
+        <div class="invoice-body">
+          <div class="invoice-section">
+            <h3>Order Summary</h3>
+            <div class="invoice-details">
+              <div class="detail-row">
+                <span>Order ID</span>
+                <span id="order_id" class="highlight">#4</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="invoice-section">
+            <h3>Items Ordered</h3>
+            <div class="items-list" id="itemsContainer">
+              <!-- Items will be loaded here -->
+              <div class="item-row">
+                <span>Loading items...</span>
+                <span>Rs. 0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="invoice-section">
+            <h3>Payment Summary</h3>
+            <div class="payment-details">
+              <div class="detail-row">
+                <span>Subtotal</span>
+                <span id="subtotal">Rs. 0.00</span>
+              </div>
+              <div class="detail-row">
+                <span>Delivery Fee</span>
+                <span id="deliveryFee">Rs. 0.00</span>
+              </div>
+              <div class="detail-row total-row">
+                <span>Total Amount</span>
+                <span id="total">Rs. 0.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="invoice-footer">
+          <p>Thank you for your order! Your food will be delivered shortly.</p>
+          <div class="action-bar">
+            <a href="menu.html" class="btn btn-secondary">
+              ← Back to Menu
+            </a>
+            <button onclick="window.print()" class="btn btn-primary">
+              Print Invoice
+            </button>
+            <button onclick="logout()" class="btn logout-btn">
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../main.js"></script>
+  <script>
+    protect('user');
+
+    async function loadBillingData() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const order_id = urlParams.get('order_id');
+      const token = localStorage.getItem('token');
+
+      if (!order_id) {
+        alert('No order specified');
+        window.location.href = 'menu.html';
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/orders/${order_id}/billing`, {
+          headers: { Authorization: token }
+        });
+        
+        if (!res.ok) throw new Error('Failed to load billing data');
+        
+        const data = await res.json();
+        
+        // Update order information
+        document.getElementById('order_id').textContent = `#${order_id}`;
+        document.getElementById('orderStatus').textContent = `${data.statusEmoji || ''} ${data.status}`;
+        document.getElementById('subtotal').textContent = `Rs. ${data.subtotal}`;
+        document.getElementById('deliveryFee').textContent = `Rs. ${data.deliveryFee}`;
+        document.getElementById('total').textContent = `Rs. ${data.total}`;
+        
+        // Format and display items
+        const itemsContainer = document.getElementById('itemsContainer');
+        itemsContainer.innerHTML = '';
+        
+        if (data.items && data.items.length > 0) {
+          data.items.forEach(item => {
+            const itemRow = document.createElement('div');
+            itemRow.className = 'item-row';
+            itemRow.innerHTML = `
+              <span>${item.name} ×${item.quantity}</span>
+              <span>Rs. ${item.total.toFixed(2)}</span>
+            `;
+            itemsContainer.appendChild(itemRow);
+          });
+        } else {
+          itemsContainer.innerHTML = '<div class="item-row"><span>No items in this order</span><span>Rs. 0.00</span></div>';
+        }
+        
+        // Set current date
+        const today = new Date();
+        document.getElementById('orderDate').textContent = today.toLocaleDateString('en-US', {
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        
+      } catch (error) {
+        console.error('Billing error:', error);
+        alert('Failed to load billing information');
+        document.getElementById('itemsContainer').innerHTML = 
+          '<div class="item-row"><span>Error loading items</span><span>Rs. 0.00</span></div>';
+      }
+    }
+
+    loadBillingData();
+  </script>
+</body>
+</html>

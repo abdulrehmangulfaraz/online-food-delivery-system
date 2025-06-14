@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Order - Chef Deliver</title>
+  <link rel="stylesheet" href="../css/Pages.css">
+</head>
+<body>
+  <div class="admin-container">
+    <header class="admin-header">
+      <div class="header-content">
+        <h1>Chef Deliver and Track</h1>
+        <p class="admin-subtitle">Order Tracking</p>
+      </div>
+    </header>
+
+    <main class="dashboard-main">
+      <div class="form-card">
+        <h2>Track Your Order</h2>
+        <form id="trackForm" class="starling-form">
+          <div class="form-group">
+            <label for="order_id">Order ID</label>
+            <input type="text" id="order_id" placeholder="Enter Order ID" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Track Order</button>
+        </form>
+
+        <div id="result" class="mt-lg"></div>
+
+        <div class="action-bar">
+          <a href="menu.html" class="btn btn-secondary">← Back to Menu</a>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../main.js"></script>
+  <script>
+    protect('user');
+
+    document.getElementById('trackForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const order_id = document.getElementById('order_id').value;
+      const token = localStorage.getItem('token');
+      const resultDiv = document.getElementById('result');
+
+      resultDiv.innerHTML = '<div class="list-item shimmer">Loading order details...</div>';
+
+      try {
+        const res = await fetch(`/api/orders/track/${order_id}`, {
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await res.json();
+
+        if (res.ok) {
+          resultDiv.innerHTML = `
+            <div class="list-item">
+              <h3>Order #${order_id}</h3>
+              <p><strong>Status:</strong> ${data.status} ${data.statusEmoji || ''}</p>
+              <p><strong>Last Updated:</strong> ${new Date(data.updatedAt).toLocaleString()}</p>
+            </div>
+          `;
+        } else {
+          resultDiv.innerHTML = `<div class="list-item error">${data.message || 'Order not found'}</div>`;
+        }
+      } catch (error) {
+        console.error('Tracking error:', error);
+        resultDiv.innerHTML = `<div class="list-item error">Failed to track order: ${error.message}</div>`;
+      }
+    });
+  </script>
+</body>
+</html>

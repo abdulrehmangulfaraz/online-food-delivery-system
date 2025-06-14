@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Sign Up - Chef Deliver</title>
+  <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+  <h1>Welcome To Chef Deliver and Track by Abdulrehman</h1>
+  <div class="form-container">
+    <h2>Create Account</h2>
+    <form id="signupForm">
+      <input type="text" id="username" placeholder="Username" required minlength="3">
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Password" required minlength="6">
+      <button type="submit" id="signupBtn">Sign Up</button>
+    </form>
+    <p>Already have an account? <a href="login.html">Log in</a></p>
+    <p class="error-message" id="errorMsg"></p>
+    <p class="success-message" id="successMsg"></p>
+  </div>
+
+  <script>
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const signupBtn = document.getElementById('signupBtn');
+      const errorMsg = document.getElementById('errorMsg');
+      const successMsg = document.getElementById('successMsg');
+
+      signupBtn.disabled = true;
+      signupBtn.textContent = 'Creating account...';
+      errorMsg.textContent = '';
+      successMsg.textContent = '';
+
+      try {
+        const res = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ username, email, password })
+        });
+
+        if (res.ok) {
+          successMsg.textContent = 'Account created successfully! Redirecting...';
+          setTimeout(() => {
+            window.location.href = 'login.html';
+          }, 1500);
+        } else {
+          const data = await res.json();
+          errorMsg.textContent = data.message || 'Signup failed. Please try again.';
+        }
+      } catch (error) {
+        console.error('Signup error:', error);
+        errorMsg.textContent = 'Network error. Please try again.';
+      } finally {
+        signupBtn.disabled = false;
+        signupBtn.textContent = 'Sign Up';
+      }
+    });
+  </script>
+</body>
+</html>
